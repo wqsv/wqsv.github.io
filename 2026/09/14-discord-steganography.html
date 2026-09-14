@@ -1,59 +1,227 @@
 <!DOCTYPE html>
 <html lang="en" data-theme="">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <title>Building Robust Image Steganography That Survives Discord - wqsv</title>
-
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="description" content="A practical write-up on robust DCT-domain image steganography over a lossy Discord profile-picture channel.">
+  <title>Building Robust Image Steganography That Survives Discord — wqsv</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,700;1,700&family=Inter:wght@300;400;600&family=Fira+Code&display=swap" rel="stylesheet">
-
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
-
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/atom-one-dark.min.css">
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/languages/x86asm.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/plugins/autoloader/highlightjs-autoloader.min.js"></script>
-
-  <link rel="stylesheet" href="../../blogpost.css">
+  <style>
+:root{
+  --bg:#0b0d10;
+  --surface:#11151a;
+  --surface-2:#171c22;
+  --text:#e9edf2;
+  --muted:#9aa5b1;
+  --border:#2a313a;
+  --accent:#d8b27c;
+  --accent-soft:rgba(216,178,124,.14);
+  --max:900px;
+  --radius:14px;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;background:var(--bg)}
+body{
+  margin:0;background:var(--bg);color:var(--text);
+  font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  line-height:1.75;
+}
+a{color:inherit}
+.bp-header{
+  position:sticky;top:0;z-index:20;
+  background:rgba(11,13,16,.92);
+  backdrop-filter:blur(12px);
+  border-bottom:1px solid var(--border);
+}
+.bp-header-inner{
+  width:min(calc(100% - 32px),1100px);margin:auto;
+  min-height:82px;display:flex;align-items:center;
+  justify-content:space-between;gap:24px;
+}
+.bp-meta-left{display:flex;align-items:center;gap:14px;min-width:0}
+.gh-avatar{border-radius:50%;flex:0 0 auto}
+.bp-title-wrap{min-width:0}
+.bp-title{
+  margin:0;font-family:"Playfair Display",Georgia,serif;
+  font-size:clamp(1.15rem,2.4vw,1.65rem);line-height:1.15;
+}
+.bp-sub{margin:4px 0 0;color:var(--muted);font-size:.88rem}
+.bp-nav{display:flex;gap:8px;flex:0 0 auto}
+.nav-btn{
+  display:inline-flex;align-items:center;gap:7px;padding:8px 11px;
+  border:1px solid var(--border);border-radius:10px;text-decoration:none;
+  background:var(--surface);color:var(--text);
+}
+.nav-btn:hover{background:var(--surface-2)}
+.bp-main{width:min(calc(100% - 32px),var(--max));margin:0 auto}
+.post-article{padding:42px 0 80px}
+.article-head{margin-bottom:34px}
+.reading-meta{margin:0;color:var(--muted);font-size:.9rem;font-weight:600;letter-spacing:.02em}
+hr{border:0;border-top:1px solid var(--border);margin:30px 0}
+.article-body{font-size:1.02rem}
+.article-body p{margin:0 0 1.05em}
+.article-body h3{
+  margin:2.5em 0 .65em;
+  font-family:"Playfair Display",Georgia,serif;
+  font-size:clamp(1.65rem,3vw,2.05rem);line-height:1.2;
+  scroll-margin-top:110px;
+}
+.article-body h4{
+  margin:2em 0 .6em;font-size:1.18rem;line-height:1.35;
+  scroll-margin-top:110px;
+}
+.article-body ul,.article-body ol{padding-left:1.4rem;margin:0 0 1.2em}
+.article-body li{margin:.35em 0}
+.article-body blockquote{
+  margin:1.5rem 0;padding:1rem 1.25rem;
+  border-left:3px solid var(--accent);
+  background:var(--accent-soft);
+  border-radius:0 var(--radius) var(--radius) 0;
+}
+.article-body blockquote p:last-child{margin-bottom:0}
+.article-body code{
+  font-family:"Fira Code",ui-monospace,SFMono-Regular,Menlo,monospace;
+  font-size:.88em;background:var(--surface-2);padding:.12em .35em;border-radius:5px;
+}
+.code-wrap{
+  width:100%;margin:1.25rem 0;
+}
+.code-block{
+  margin:0;max-width:100%;overflow:auto;
+  border:1px solid var(--border);border-radius:12px;
+  background:#0d1117;padding:1rem 1.1rem;
+  font:0.86rem/1.55 "Fira Code",ui-monospace,SFMono-Regular,Menlo,monospace;
+  white-space:pre;
+}
+.code-block code{background:none;padding:0}
+.table-wrap{
+  width:100%;overflow-x:auto;margin:1.5rem 0;
+  border:1px solid var(--border);border-radius:12px;
+  background:var(--surface);
+}
+.data-table{
+  width:100%;min-width:620px;border-collapse:collapse;
+  border:0;font-size:.93rem;line-height:1.5;
+}
+.data-table th,.data-table td{
+  padding:12px 14px;border-bottom:1px solid var(--border);
+  text-align:left;vertical-align:top;
+}
+.data-table th{font-weight:600;background:var(--surface-2)}
+.data-table tr:last-child td{border-bottom:0}
+.data-table td:nth-child(2){white-space:nowrap}
+.toc{
+  margin:1rem 0 2rem;padding:1rem 1.2rem;
+  border:1px solid var(--border);border-radius:12px;background:var(--surface);
+}
+.toc ol{margin:0;padding-left:1.35rem}
+.toc li{margin:.18rem 0}
+.toc .toc-section{margin-top:.45rem;font-weight:600}
+.toc .toc-sub{font-weight:400;margin-left:1rem;font-size:.94em;color:var(--muted)}
+.toc a{text-decoration:none}
+.toc a:hover{text-decoration:underline}
+.flow,.pipeline,.flow-branch{
+  width:min(100%,720px);margin:1.5rem auto;
+  display:flex;flex-direction:column;align-items:center;
+}
+.flow-node{
+  width:min(100%,520px);padding:11px 16px;text-align:center;
+  border:1px solid var(--border);border-radius:11px;
+  background:linear-gradient(180deg,var(--surface-2),var(--surface));
+  box-shadow:0 5px 20px rgba(0,0,0,.16);
+}
+.flow-node small{color:var(--muted)}
+.flow-arrow{
+  width:2px;height:24px;background:var(--accent);position:relative;
+}
+.flow-arrow::after{
+  content:"";position:absolute;left:50%;bottom:-1px;
+  width:8px;height:8px;border-right:2px solid var(--accent);
+  border-bottom:2px solid var(--accent);transform:translateX(-50%) rotate(45deg);
+}
+.flow.stack .flow-node{}
+.flow-branch .branch-grid{
+  width:100%;display:grid;grid-template-columns:repeat(3,1fr);
+  gap:10px;margin-top:18px;
+}
+.branch-card{
+  padding:12px;border:1px solid var(--border);border-radius:10px;
+  background:var(--surface);display:flex;flex-direction:column;gap:3px;
+  text-align:center;
+}
+.branch-card span,.responsibility span,.pipeline-branch span{color:var(--muted);font-size:.9rem}
+.branch-card.active{border-color:var(--accent);background:var(--accent-soft)}
+.compare-flow,.responsibility-grid{
+  display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;
+  margin:1.5rem 0;
+}
+.compare-flow-card,.responsibility{
+  padding:14px;border:1px solid var(--border);border-radius:12px;
+  background:var(--surface);display:flex;flex-direction:column;gap:4px;
+}
+.responsibility-grid{grid-template-columns:repeat(4,minmax(0,1fr))}
+.split-grid{
+  width:100%;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:12px;margin:14px 0;
+}
+.pipeline-branch{
+  padding:14px;border:1px solid var(--border);border-radius:12px;
+  background:var(--surface);display:flex;flex-direction:column;gap:6px;text-align:center;
+}
+.merge-line{width:50%;height:18px;border-bottom:2px solid var(--accent);border-left:2px solid transparent;border-right:2px solid transparent}
+.relation-list{
+  display:flex;flex-wrap:wrap;gap:10px;margin:1rem 0;
+}
+.inline-relation{
+  display:inline-block;padding:8px 12px;border:1px solid var(--border);
+  border-radius:9px;background:var(--surface);font-family:"Fira Code",monospace;
+}
+.bp-footer{border-top:1px solid var(--border);color:var(--muted)}
+.bp-footer-inner{width:min(calc(100% - 32px),1100px);margin:auto;padding:20px 0}
+@media (max-width:700px){
+  .bp-header-inner{min-height:70px}
+  .bp-title{font-size:1.08rem}
+  .bp-sub{font-size:.78rem}
+  .nav-text{display:none}
+  .post-article{padding-top:28px}
+  .article-body{font-size:.98rem}
+  .flow-branch .branch-grid,.split-grid,.responsibility-grid,.compare-flow{
+    grid-template-columns:1fr;
+  }
+  .data-table{min-width:560px}
+  .bp-main{width:min(calc(100% - 22px),var(--max))}
+}
+</style>
 </head>
 <body>
   <header class="bp-header" role="banner" aria-label="Post header">
     <div class="bp-header-inner">
       <div class="bp-meta-left">
-        <img class="gh-avatar" src="https://avatars.githubusercontent.com/u/132809543" alt="GitHub avatar for wqsv" width="72" height="72" />
+        <img class="gh-avatar" src="https://avatars.githubusercontent.com/u/132809543" alt="GitHub avatar for wqsv" width="56" height="56" loading="lazy">
         <div class="bp-title-wrap">
           <h1 class="bp-title">Building Robust Image Steganography That Survives Discord</h1>
-          <p class="bp-sub">by <strong>wqsv</strong> · 10-13 minute read</p>
+          <p class="bp-sub">by <strong>wqsv</strong> · 10–13 minute read</p>
         </div>
       </div>
-
-      <nav class="bp-nav" role="navigation" aria-label="Post navigation">
-        <a id="go-back" class="nav-btn" href="/" title="Home" aria-label="Go to home (root)">
-          <i class="fa fa-home" aria-hidden="true"></i>
-          <span class="nav-text">Home</span>
-        </a>
-
-        <a class="nav-btn" href="https://github.com/wqsv" target="_blank" rel="noopener noreferrer" title="Open GitHub profile" aria-label="Open GitHub profile">
-          <i class="fa fa-github" aria-hidden="true"></i>
-          <span class="nav-text">GitHub</span>
-        </a>
+      <nav class="bp-nav" aria-label="Post navigation">
+        <a id="go-back" class="nav-btn" href="/" title="Home"><span aria-hidden="true">⌂</span><span class="nav-text">Home</span></a>
+        <a class="nav-btn" href="https://github.com/wqsv" target="_blank" rel="noopener noreferrer" title="Open GitHub profile"><span aria-hidden="true">↗</span><span class="nav-text">GitHub</span></a>
       </nav>
     </div>
   </header>
 
   <main class="bp-main" role="main">
-    <article class="post-article" itemscope itemtype="http://schema.org/Article">
+    <article class="post-article" itemscope itemtype="https://schema.org/Article">
       <header class="article-head">
-        <h2 class="reading-meta">September 14, 2026 --- 10-13 Minute Read</h2>
+        <h2 class="reading-meta">September 14, 2026 — 10–13 minute read</h2>
         <hr>
       </header>
-
       <section class="article-body" itemprop="articleBody">
         <p>Steganography is often introduced with a simple example: take an image, replace the least significant bits of some pixels with a message, and recover the message later.</p>
         <p>That works when the encoded image is preserved exactly. It becomes a very different problem when the image passes through a platform such as Discord, which may resize or re-encode the image before the receiver gets it. The hidden data must therefore <strong>survive a lossy channel</strong>.</p>
-        <p>To make the problem concrete, the initial goal was to hide a short sentence in a profile picture and recover it after Discord processed the image. AFAIK, there's no information on how Discord re-encodes images.</p>
+        <p>To make the problem concrete, the initial goal was to hide a short sentence in a profile picture and recover it after Discord processed the image. The exact details of Discord's image-processing pipeline are not treated as a public specification here; the behavior described below is based on the observed test path.</p>
         <p>This write-up documents the path from a basic LSB implementation to a working keyless DCT-domain steganography system that successfully recovered a short message after Discord profile-picture processing.</p>
         <p>The final system is not a standard named algorithm. It is a combination of established techniques:</p>
         <ul>
@@ -68,9 +236,9 @@
         <blockquote>
         <p><strong>Note on scope and platform behavior</strong></p>
         <p>This experiment is specifically about <strong>Discord profile pictures</strong>, not images uploaded as ordinary attachments.</p>
-        <p>The carrier used in the experiment is a <strong>1024x1024 PNG</strong>. The PNG is first modified by the steganographic encoder. The resulting encoded PNG is then used as a Discord profile picture. Discord processes and stores the profile picture as <strong>WebP</strong>, so the decoder does not receive the original encoded PNG.</p>
+        <p>The carrier used in the experiment is a <strong>1024x1024 PNG</strong>. The PNG is first modified by the steganographic encoder. The resulting encoded PNG is then used as a Discord profile picture. The tested retrieval path returned the profile picture as <strong>WebP</strong>, so the decoder does not receive the original encoded PNG.</p>
         <p>The actual channel being tested is therefore:</p>
-        <p>``` text</p>
+        
         <p>1024x1024 source PNG</p>
         <p>        ↓</p>
         <p>steganographic encoder</p>
@@ -84,112 +252,84 @@
         <p>downloaded WebP</p>
         <p>        ↓</p>
         <p>steganographic decoder</p>
-        <p>```</p>
+        
         <p>This distinction is important. The goal is <strong>not</strong> to design a general-purpose steganography system for arbitrary Discord images or attachments. The parameters in this write-up were selected around this specific <strong>1024x1024 profile-picture → WebP</strong> pipeline.</p>
         <p>Consequently, values such as the DCT coefficient locations, embedding strength, repetition factors, and resulting payload capacity should be understood as experimentally chosen parameters for this channel, rather than universal steganography constants.</p>
         </blockquote>
         <hr>
         <h3 id="index">Index</h3>
-        <ul>
-        <li><a href="#contents" target="_blank" rel="noopener noreferrer">Contents</a></li>
-        <li><a href="#1-the-problem" target="_blank" rel="noopener noreferrer">1. The problem</a></li>
-        <li>[1.1 The carrier and the</li>
-        </ul>
-        <p>channel](#11-the-carrier-and-the-channel)</p>
-        <ul>
-        <li><a href="#12-the-embedding-budget" target="_blank" rel="noopener noreferrer">1.2 The embedding budget</a></li>
-        <li><a href="#2-lsb-as-the-baseline" target="_blank" rel="noopener noreferrer">2. LSB as the baseline</a></li>
-        <li><a href="#21-baseline-rationale" target="_blank" rel="noopener noreferrer">2.1 Baseline rationale</a></li>
-        <li><a href="#22-baseline-failure" target="_blank" rel="noopener noreferrer">2.2 Baseline failure</a></li>
-        <li><a href="#23-first-paradigm-shift" target="_blank" rel="noopener noreferrer">2.3 First paradigm shift</a></li>
-        <li><a href="#24-experimental-progression" target="_blank" rel="noopener noreferrer">2.4 Experimental progression</a></li>
-        <li><a href="#3-moving-into-the-dct-domain" target="_blank" rel="noopener noreferrer">3. Moving into the DCT domain</a></li>
-        <li><a href="#31-8x8-dct-blocks" target="_blank" rel="noopener noreferrer">3.1 8x8 DCT blocks</a></li>
-        <li><a href="#32-coefficient-pair-selection" target="_blank" rel="noopener noreferrer">3.2 Coefficient-pair selection</a></li>
-        <li>[3.3 Relationship-based</li>
-        </ul>
-        <p>embedding](#33-relationship-based-embedding)</p>
-        <ul>
-        <li><a href="#34-embedding-margin" target="_blank" rel="noopener noreferrer">3.4 Embedding margin</a></li>
-        <li>[3.5 Luminance-channel</li>
-        </ul>
-        <p>embedding](#35-luminance-channel-embedding)</p>
-        <ul>
-        <li><a href="#4-adding-redundancy" target="_blank" rel="noopener noreferrer">4. Adding redundancy</a></li>
-        <li><a href="#41-repetition" target="_blank" rel="noopener noreferrer">4.1 Repetition</a></li>
-        <li><a href="#42-capacity-cost" target="_blank" rel="noopener noreferrer">4.2 Capacity cost</a></li>
-        <li><a href="#43-hamming1511" target="_blank" rel="noopener noreferrer">4.3 Hamming(15,11)</a></li>
-        <li><a href="#44-crc32-integrity-checking" target="_blank" rel="noopener noreferrer">4.4 CRC32 integrity checking</a></li>
-        <li><a href="#45-second-paradigm-shift" target="_blank" rel="noopener noreferrer">4.5 Second paradigm shift</a></li>
-        <li>[5. Matching protection to the error</li>
-        </ul>
-        <p>pattern](#5-matching-protection-to-the-error-pattern)</p>
-        <ul>
-        <li><a href="#51-correlated-errors" target="_blank" rel="noopener noreferrer">5.1 Correlated errors</a></li>
-        <li>[5.2 Spatial distribution of repeated</li>
-        </ul>
-        <p>observations](#52-spatial-distribution-of-repeated-observations)</p>
-        <ul>
-        <li><a href="#53-interleaving" target="_blank" rel="noopener noreferrer">5.3 Interleaving</a></li>
-        <li><a href="#54-bch3121" target="_blank" rel="noopener noreferrer">5.4 BCH(31,21)</a></li>
-        <li><a href="#6-protecting-the-whole-message" target="_blank" rel="noopener noreferrer">6. Protecting the whole message</a></li>
-        <li><a href="#61-protecting-metadata" target="_blank" rel="noopener noreferrer">6.1 Protecting metadata</a></li>
-        <li>[6.2 BCH protection for the</li>
-        </ul>
-        <p>header](#62-bch-protection-for-the-header)</p>
-        <ul>
-        <li><a href="#63-division-of-responsibility" target="_blank" rel="noopener noreferrer">6.3 Division of responsibility</a></li>
-        <li>[7. Simplifying the carrier</li>
-        </ul>
-        <p>modification](#7-simplifying-the-carrier-modification)</p>
-        <ul>
-        <li><a href="#71-multiple-pair-embedding" target="_blank" rel="noopener noreferrer">7.1 Multiple-pair embedding</a></li>
-        <li><a href="#72-final-coefficient-pair" target="_blank" rel="noopener noreferrer">7.2 Final coefficient pair</a></li>
-        <li>[7.3 Distortion versus</li>
-        </ul>
-        <p>redundancy](#73-distortion-versus-redundancy)</p>
-        <ul>
-        <li><a href="#8-the-final-system" target="_blank" rel="noopener noreferrer">8. The final system</a></li>
-        <li><a href="#81-data-format" target="_blank" rel="noopener noreferrer">8.1 Data format</a></li>
-        <li><a href="#82-encoding-pipeline" target="_blank" rel="noopener noreferrer">8.2 Encoding pipeline</a></li>
-        <li><a href="#83-decoding-pipeline" target="_blank" rel="noopener noreferrer">8.3 Decoding pipeline</a></li>
-        <li><a href="#84-final-configuration" target="_blank" rel="noopener noreferrer">8.4 Final configuration</a></li>
-        <li><a href="#9-results-and-tradeoffs" target="_blank" rel="noopener noreferrer">9. Results and tradeoffs</a></li>
-        <li><a href="#91-successful-round-trip" target="_blank" rel="noopener noreferrer">9.1 Successful round-trip</a></li>
-        <li><a href="#92-practical-capacity" target="_blank" rel="noopener noreferrer">9.2 Practical capacity</a></li>
-        <li><a href="#93-robustness-versus-capacity" target="_blank" rel="noopener noreferrer">9.3 Robustness versus capacity</a></li>
-        <li>[9.4 Standard techniques versus project-specific</li>
-        </ul>
-        <p>choices](#94-standard-techniques-versus-project-specific-choices)</p>
-        <ul>
-        <li><a href="#95-limitations-and-interpretation" target="_blank" rel="noopener noreferrer">9.5 Limitations and interpretation</a></li>
-        <li><a href="#96-reproducibility-checklist" target="_blank" rel="noopener noreferrer">9.6 Reproducibility checklist</a></li>
-        <li><a href="#10-final-perspective" target="_blank" rel="noopener noreferrer">10. Final perspective</a></li>
-        <li>[10.1 From steganography to communication-system</li>
-        </ul>
-        <p>design](#101-from-steganography-to-communication-system-design)</p>
-        <ul>
-        <li>[10.2 Security versus</li>
-        </ul>
-        <p>robustness](#102-security-versus-robustness)</p>
-        <hr>
+<nav class="toc" aria-label="Table of contents">
+<ol>
+<li class="toc-section"><a href="#1-the-problem">1. The problem</a></li>
+<li class="toc-sub"><a href="#1-1-the-carrier-and-the-channel">1.1 The carrier and the channel</a></li>
+<li class="toc-sub"><a href="#1-2-the-embedding-budget">1.2 The embedding budget</a></li>
+<li class="toc-section"><a href="#2-lsb-as-the-baseline">2. LSB as the baseline</a></li>
+<li class="toc-sub"><a href="#2-1-baseline-rationale">2.1 Baseline rationale</a></li>
+<li class="toc-sub"><a href="#2-2-baseline-failure">2.2 Baseline failure</a></li>
+<li class="toc-sub"><a href="#2-3-first-paradigm-shift">2.3 First paradigm shift</a></li>
+<li class="toc-section"><a href="#2-4-experimental-progression">2.4 Experimental progression</a></li>
+<li class="toc-section"><a href="#3-moving-into-the-dct-domain">3. Moving into the DCT domain</a></li>
+<li class="toc-sub"><a href="#3-1-8x8-dct-blocks">3.1 8x8 DCT blocks</a></li>
+<li class="toc-sub"><a href="#3-2-coefficient-pair-selection">3.2 Coefficient-pair selection</a></li>
+<li class="toc-sub"><a href="#3-3-relationship-based-embedding">3.3 Relationship-based embedding</a></li>
+<li class="toc-sub"><a href="#3-4-embedding-margin">3.4 Embedding margin</a></li>
+<li class="toc-sub"><a href="#3-5-luminance-channel-embedding">3.5 Luminance-channel embedding</a></li>
+<li class="toc-section"><a href="#4-adding-redundancy">4. Adding redundancy</a></li>
+<li class="toc-sub"><a href="#4-1-repetition">4.1 Repetition</a></li>
+<li class="toc-sub"><a href="#4-2-capacity-cost">4.2 Capacity cost</a></li>
+<li class="toc-sub"><a href="#4-3-hamming-15-11">4.3 Hamming(15,11)</a></li>
+<li class="toc-sub"><a href="#4-4-crc32-integrity-checking">4.4 CRC32 integrity checking</a></li>
+<li class="toc-sub"><a href="#4-5-second-paradigm-shift">4.5 Second paradigm shift</a></li>
+<li class="toc-section"><a href="#5-matching-protection-to-the-error-pattern">5. Matching protection to the error pattern</a></li>
+<li class="toc-sub"><a href="#5-1-correlated-errors">5.1 Correlated errors</a></li>
+<li class="toc-sub"><a href="#5-2-spatial-distribution-of-repeated-observations">5.2 Spatial distribution of repeated observations</a></li>
+<li class="toc-sub"><a href="#5-3-interleaving">5.3 Interleaving</a></li>
+<li class="toc-sub"><a href="#5-4-bch-31-21">5.4 BCH(31,21)</a></li>
+<li class="toc-section"><a href="#6-protecting-the-whole-message">6. Protecting the whole message</a></li>
+<li class="toc-sub"><a href="#6-1-protecting-metadata">6.1 Protecting metadata</a></li>
+<li class="toc-sub"><a href="#6-2-bch-protection-for-the-header">6.2 BCH protection for the header</a></li>
+<li class="toc-sub"><a href="#6-3-division-of-responsibility">6.3 Division of responsibility</a></li>
+<li class="toc-section"><a href="#7-simplifying-the-carrier-modification">7. Simplifying the carrier modification</a></li>
+<li class="toc-sub"><a href="#7-1-multiple-pair-embedding">7.1 Multiple-pair embedding</a></li>
+<li class="toc-sub"><a href="#7-2-final-coefficient-pair">7.2 Final coefficient pair</a></li>
+<li class="toc-sub"><a href="#7-3-distortion-versus-redundancy">7.3 Distortion versus redundancy</a></li>
+<li class="toc-section"><a href="#8-the-final-system">8. The final system</a></li>
+<li class="toc-sub"><a href="#8-1-data-format">8.1 Data format</a></li>
+<li class="toc-sub"><a href="#8-2-encoding-pipeline">8.2 Encoding pipeline</a></li>
+<li class="toc-sub"><a href="#8-3-decoding-pipeline">8.3 Decoding pipeline</a></li>
+<li class="toc-sub"><a href="#8-4-final-configuration">8.4 Final configuration</a></li>
+<li class="toc-section"><a href="#9-results-and-tradeoffs">9. Results and tradeoffs</a></li>
+<li class="toc-sub"><a href="#9-1-successful-round-trip">9.1 Successful round-trip</a></li>
+<li class="toc-sub"><a href="#9-2-practical-capacity">9.2 Practical capacity</a></li>
+<li class="toc-sub"><a href="#9-3-robustness-versus-capacity">9.3 Robustness versus capacity</a></li>
+<li class="toc-sub"><a href="#9-4-standard-techniques-versus-project-specific-choices">9.4 Standard techniques versus project-specific choices</a></li>
+<li class="toc-section"><a href="#9-5-limitations-and-interpretation">9.5 Limitations and interpretation</a></li>
+<li class="toc-sub"><a href="#9-6-reproducibility-checklist">9.6 Reproducibility checklist</a></li>
+<li class="toc-section"><a href="#10-final-perspective">10. Final perspective</a></li>
+<li class="toc-sub"><a href="#10-1-from-steganography-to-communication-system-design">10.1 From steganography to communication-system design</a></li>
+<li class="toc-sub"><a href="#10-2-security-versus-robustness">10.2 Security versus robustness</a></li>
+</ol>
+</nav>
+<hr>
         <h3 id="1-the-problem">1. The problem</h3>
         <h4 id="1-1-the-carrier-and-the-channel">1.1 The carrier and the channel</h4>
         <p>The carrier image was a <strong>1024x1024 black-and-white VHS-style image</strong>.</p>
         <p>The goal was to hide a short plaintext message and recover it after the image was used as a <strong>Discord profile picture</strong>.</p>
         <p>The decoder receives the processed image rather than the original encoded PNG:</p>
-        <div class="container">
-        <pre><code class="language-text">encoded PNG
-    ↓
-Discord profile-picture processing
-    ↓
-downloaded WebP</code></pre>
+        <div class="code-wrap">
+        <div class="flow compact" role="img" aria-label="Process flow">
+  <div class="flow-node">Encoded PNG</div>
+  <div class="flow-arrow" aria-hidden="true"></div>
+  <div class="flow-node">Discord profile-picture processing</div>
+  <div class="flow-arrow" aria-hidden="true"></div>
+  <div class="flow-node">Downloaded WebP</div>
+</div>
         </div>
         <p>The task is therefore to encode information in a form that remains recoverable after this transformation.</p>
         <h4 id="1-2-the-embedding-budget">1.2 The embedding budget</h4>
         <p>With an 8x8 DCT grid, a 1024x1024 image contains <code>1024/8=128</code> blocks along each dimension and therefore <code>128x128=16,384</code> blocks in total.</p>
         <p>That number looks large until redundancy is introduced. A block is only a carrier location; it is not necessarily one useful message bit. Repetition, error-correcting codes, interleaving, and other robustness mechanisms consume many of those locations.</p>
-        <table border="1" cellpadding="6" cellspacing="0">
+        <div class="table-wrap"><table class="data-table">
         <thead><tr>
         <th>Parameter</th>
         <th>Value</th>
@@ -242,35 +382,35 @@ downloaded WebP</code></pre>
         <td>Fixed public seed for reproducible block ordering</td>
         </tr>
         </tbody>
-        </table>
+        </table></div>
         <p>The design problem is to choose a representation, redundancy budget, and reconstruction strategy that remain usable after the channel changes the carrier.</p>
         <hr>
         <h3 id="2-lsb-as-the-baseline">2. LSB as the baseline</h3>
         <h4 id="2-1-baseline-rationale">2.1 Baseline rationale</h4>
         <p>LSB steganography is the obvious baseline because it is simple and has excellent raw capacity. For an 8-bit channel value such as:</p>
-        <div class="container">
-        <pre><code class="language-text">10110110</code></pre>
+        <div class="code-wrap">
+        <pre class="code-block"><code class="language-text">10110110</code></pre>
         </div>
         <p>the least significant bit is the final bit. Changing it from <code>0</code> to <code>1</code> changes the value by only one:</p>
-        <div class="container">
-        <pre><code class="language-text">182 = 10110110
+        <div class="code-wrap">
+        <pre class="code-block"><code class="language-text">182 = 10110110
 183 = 10110111</code></pre>
         </div>
         <p>For an unchanged image, this is attractive: the modification is tiny and straightforward to decode.</p>
         <h4 id="2-2-baseline-failure">2.2 Baseline failure</h4>
         <p>The problem appeared as soon as the carrier passed through Discord and it was obvious.</p>
         <p>LSB encoding depends on <strong>exact pixel values</strong>. If a transformation changes a value from:</p>
-        <div class="container">
-        <pre><code class="language-text">10110110</code></pre>
+        <div class="code-wrap">
+        <pre class="code-block"><code class="language-text">10110110</code></pre>
         </div>
         <p>to:</p>
-        <div class="container">
-        <pre><code class="language-text">10110111</code></pre>
+        <div class="code-wrap">
+        <pre class="code-block"><code class="language-text">10110111</code></pre>
         </div>
         <p>the visual change may be negligible, but the hidden bit has changed.</p>
         <p>That is exactly what happened in the experiment. The images could remain visually similar while enough pixel values changed to destroy a large fraction of the embedded bits. The decoder eventually interpreted arbitrary image data as a message length such as:</p>
-        <div class="container">
-        <pre><code class="language-text">2456687191</code></pre>
+        <div class="code-wrap">
+        <pre class="code-block"><code class="language-text">2456687191</code></pre>
         </div>
         <p>The problem was the representation being used to carry the information.</p>
         <h4 id="2-3-first-paradigm-shift">2.3 First paradigm shift</h4>
@@ -279,7 +419,7 @@ downloaded WebP</code></pre>
         <p>That led to the transform domain.</p>
         <h3 id="2-4-experimental-progression">2.4 Experimental progression</h3>
         <p>The final system is easier to understand if the intermediate failures are made explicit. The design was not obtained by selecting DCT, BCH, and interleaving in advance. Each layer was added in response to a failure mode observed in an earlier experiment.</p>
-        <table border="1" cellpadding="6" cellspacing="0">
+        <div class="table-wrap"><table class="data-table">
         <thead><tr>
         <th>Attempt</th>
         <th>Main idea</th>
@@ -336,7 +476,7 @@ downloaded WebP</code></pre>
         <td>Retain the layered architecture</td>
         </tr>
         </tbody>
-        </table>
+        </table></div>
         <p>This progression is important because the individual techniques do not solve the same problem. DCT changes the representation in which information is embedded. The coefficient margin makes that representation less sensitive to small numerical changes. Repetition supplies multiple observations. Block shuffling distributes those observations spatially. Interleaving changes the shape of burst errors presented to the ECC. BCH corrects residual errors, and CRC32 determines whether the final reconstruction should be accepted.</p>
         <p>The resulting system is therefore better understood as a small communication chain than as a single steganographic trick. The engineering objective is to make the entire chain tolerate the particular transformation introduced by the tested platform.</p>
         <hr>
@@ -344,14 +484,14 @@ downloaded WebP</code></pre>
         <h4 id="3-1-8x8-dct-blocks">3.1 8x8 DCT blocks</h4>
         <p>Instead of working directly with pixel values, each 8x8 image block is transformed into 64 frequency coefficients using the <strong>Discrete Cosine Transform (DCT)</strong>.</p>
         <p>Conceptually:</p>
-        <div class="container">
-        <pre><code class="language-text">8x8 pixel block
-      |
-      v
-     DCT
-      |
-      v
-64 frequency coefficients</code></pre>
+        <div class="code-wrap">
+        <div class="flow compact" role="img" aria-label="Process flow">
+  <div class="flow-node">8×8 pixel block</div>
+  <div class="flow-arrow" aria-hidden="true"></div>
+  <div class="flow-node">DCT</div>
+  <div class="flow-arrow" aria-hidden="true"></div>
+  <div class="flow-node">64 frequency coefficients</div>
+</div>
         </div>
         <p>The coefficients describe different spatial frequencies. Values near the top-left represent broad, low-frequency structure; moving away from that region represents progressively finer detail.</p>
         <p>The transform domain is useful because image processing does not affect all components equally. Higher-frequency information is often more vulnerable to compression, while modifying very low frequencies can create visible changes.</p>
@@ -359,55 +499,53 @@ downloaded WebP</code></pre>
         <h4 id="3-2-coefficient-pair-selection">3.2 Coefficient-pair selection</h4>
         <p>The experiment tested different DCT coefficient relationships rather than assuming that one frequency location would always be optimal.</p>
         <p>The final implementation uses:</p>
-        <div class="container">
-        <pre><code class="language-text">(2,3) &lt;-&gt; (3,2)</code></pre>
+        <div class="code-wrap">
+        <pre class="code-block"><code class="language-text">(2,3) &lt;-&gt; (3,2)</code></pre>
         </div>
         <p>This pair provided a practical balance between robustness and visible distortion for the tested Discord profile-picture pipeline.</p>
         <p>It should not be treated as a universal DCT location. A different image or processing pipeline could produce a different optimum.</p>
         <h4 id="3-3-relationship-based-embedding">3.3 Relationship-based embedding</h4>
         <p>Let the selected coefficients be <code>A</code> and <code>B</code>.</p>
         <p>The decoder does not depend on their exact original values. It only checks their ordering:</p>
-        <div class="container">
-        <pre><code class="language-text">A - B &gt;= 0  →  1
-A - B &lt; 0   →  0</code></pre>
+        <div class="code-wrap">
+        <div class="relation-list"><span class="inline-relation">A - B &gt;= 0  →  1</span><span class="inline-relation">A - B &lt; 0   →  0</span></div>
         </div>
         <p>This is more useful than embedding a bit directly into the value of a coefficient because a small change to both coefficients does not necessarily change their ordering.</p>
         <h4 id="3-4-embedding-margin">3.4 Embedding margin</h4>
         <p>Simply choosing which coefficient is larger is still fragile if the difference is small. The encoder therefore creates a deliberate margin between them.</p>
         <p>First compute their midpoint:</p>
-        <div class="container">
-        <pre><code class="language-text">midpoint = (A + B) / 2</code></pre>
+        <div class="code-wrap">
+        <pre class="code-block"><code class="language-text">midpoint = (A + B) / 2</code></pre>
         </div>
         <p>Then choose a target difference:</p>
-        <div class="container">
-        <pre><code class="language-text">0 → target difference = -Δ
-1 → target difference = +Δ</code></pre>
+        <div class="code-wrap">
+        <div class="relation-list"><span class="inline-relation">0 → target difference = -Δ</span><span class="inline-relation">1 → target difference = +Δ</span></div>
         </div>
         <p>and reconstruct the pair around the same midpoint:</p>
-        <div class="container">
-        <pre><code class="language-text">A = midpoint + target / 2
+        <div class="code-wrap">
+        <pre class="code-block"><code class="language-text">A = midpoint + target / 2
 B = midpoint - target / 2</code></pre>
         </div>
         <p>The final implementation uses:</p>
-        <div class="container">
-        <pre><code class="language-text">Δ = 20</code></pre>
+        <div class="code-wrap">
+        <pre class="code-block"><code class="language-text">Δ = 20</code></pre>
         </div>
         <p>so the intended difference is approximately <code>-20</code> for a <code>0</code> and <code>+20</code> for a <code>1</code>.</p>
         <p>The important quantity is the <strong>relationship</strong> between the coefficients and the margin separating the two states, not the absolute coefficient values.</p>
         <p>This is a coefficient-difference embedding scheme. It has similarities to <strong>Quantization Index Modulation (QIM)</strong>, although describing it as <strong>QIM-like</strong> is more accurate than claiming it is a textbook QIM implementation.</p>
         <h4 id="3-5-luminance-channel-embedding">3.5 Luminance-channel embedding</h4>
         <p>The embedding is applied to the image's luminance channel rather than independently to all RGB channels.</p>
-        <div class="container">
-        <pre><code class="language-text">RGB
- |
- v
-YCbCr
- |
- +-- Y  → modified
- |
- +-- Cb → unchanged
- |
- +-- Cr → unchanged</code></pre>
+        <div class="code-wrap">
+        <div class="flow-branch" role="img" aria-label="RGB to YCbCr, with only luminance Y modified">
+  <div class="flow-node">RGB</div>
+  <div class="flow-arrow" aria-hidden="true"></div>
+  <div class="flow-node">YCbCr</div>
+  <div class="branch-grid">
+    <div class="branch-card active"><strong>Y</strong><span>modified</span></div>
+    <div class="branch-card"><strong>Cb</strong><span>unchanged</span></div>
+    <div class="branch-card"><strong>Cr</strong><span>unchanged</span></div>
+  </div>
+</div>
         </div>
         <p>Only <code>Y</code> is divided into 8x8 blocks and modified. The channels are then recombined and converted back to RGB.</p>
         <p>This keeps the chrominance channels untouched and places the hidden signal in image luminance.</p>
@@ -422,8 +560,8 @@ YCbCr
         <p>Even with a better carrier representation, some individual measurements can still be wrong after processing.</p>
         <p>A simple response is to embed the same bit multiple times.</p>
         <p>For example, with 25 copies:</p>
-        <div class="container">
-        <pre><code class="language-text">original bit = 1
+        <div class="code-wrap">
+        <pre class="code-block"><code class="language-text">original bit = 1
 
 19 observations → 1
  6 observations → 0</code></pre>
@@ -431,8 +569,8 @@ YCbCr
         <p>A majority vote still recovers the original bit.</p>
         <p>Repetition does not improve any individual observation. It simply gives the decoder multiple observations of the same information.</p>
         <p>The final configuration uses:</p>
-        <div class="container">
-        <pre><code class="language-text">Header:  25×
+        <div class="code-wrap">
+        <pre class="code-block"><code class="language-text">Header:  25×
 Payload: 30×</code></pre>
         </div>
         <p>These are empirical parameters for the tested carrier, not universal constants.</p>
@@ -444,58 +582,56 @@ Payload: 30×</code></pre>
         <h4 id="4-3-hamming-15-11">4.3 Hamming(15,11)</h4>
         <p>The first error-correcting code tested was Hamming(15,11). It takes 11 data bits and adds 4 parity bits to form a 15-bit codeword.</p>
         <p>The parity bits occupy positions that are powers of two:</p>
-        <div class="container">
-        <pre><code class="language-text">P1  P2  P4  P8</code></pre>
+        <div class="code-wrap">
+        <pre class="code-block"><code class="language-text">P1  P2  P4  P8</code></pre>
         </div>
         <p>The remaining positions contain the data bits. Each position has a binary representation, and that representation determines which parity checks include the position.</p>
         <p>For example:</p>
-        <div class="container">
-        <pre><code class="language-text">11 = 1011₂</code></pre>
+        <div class="code-wrap">
+        <pre class="code-block"><code class="language-text">11 = 1011₂</code></pre>
         </div>
         <p>so position 11 participates in the P8, P2, and P1 checks.</p>
         <p>If bit 11 is corrupted, those three parity checks fail. The failed-check pattern forms the syndrome:</p>
-        <div class="container">
-        <pre><code class="language-text">P8  P4  P2  P1
+        <div class="code-wrap">
+        <pre class="code-block"><code class="language-text">P8  P4  P2  P1
  1   0   1   1</code></pre>
         </div>
         <p>which is:</p>
-        <div class="container">
-        <pre><code class="language-text">1011₂ = 11</code></pre>
+        <div class="code-wrap">
+        <pre class="code-block"><code class="language-text">1011₂ = 11</code></pre>
         </div>
         <p>The decoder can therefore identify and correct the corrupted bit.</p>
         <p>Hamming(15,11) is designed to correct <strong>one bit error per codeword</strong>. With multiple errors in the same codeword, the syndrome is no longer guaranteed to identify a single valid error location.</p>
         <p>So Hamming demonstrated an important advantage over repetition: its redundancy is structured around the relationships between bits, allowing the decoder to correct errors instead of merely choosing the majority value.</p>
         <p>The experimental pipeline was:</p>
-        <div class="container">
-        <pre><code class="language-text">message bits
-    |
-    v
-Hamming encoding
-    |
-    v
-repetition
-    |
-    v
-DCT embedding</code></pre>
+        <div class="code-wrap">
+        <div class="flow compact" role="img" aria-label="Process flow">
+  <div class="flow-node">Message bits</div>
+  <div class="flow-arrow" aria-hidden="true"></div>
+  <div class="flow-node">Hamming encoding</div>
+  <div class="flow-arrow" aria-hidden="true"></div>
+  <div class="flow-node">Repetition</div>
+  <div class="flow-arrow" aria-hidden="true"></div>
+  <div class="flow-node">DCT embedding</div>
+</div>
         </div>
         <p>and in reverse:</p>
-        <div class="container">
-        <pre><code class="language-text">DCT extraction
-    |
-    v
-repetition voting
-    |
-    v
-Hamming decoding
-    |
-    v
-message bits</code></pre>
+        <div class="code-wrap">
+        <div class="flow compact" role="img" aria-label="Process flow">
+  <div class="flow-node">DCT extraction</div>
+  <div class="flow-arrow" aria-hidden="true"></div>
+  <div class="flow-node">Repetition voting</div>
+  <div class="flow-arrow" aria-hidden="true"></div>
+  <div class="flow-node">Hamming decoding</div>
+  <div class="flow-arrow" aria-hidden="true"></div>
+  <div class="flow-node">Message bits</div>
+</div>
         </div>
         <p>The experiment showed that this was still not enough for the observed channel errors.</p>
         <h4 id="4-4-crc32-integrity-checking">4.4 CRC32 integrity checking</h4>
         <p>A correct-looking decode is not necessarily a correct decode. The message therefore carries a CRC32 value calculated from the original payload:</p>
-        <div class="container">
-        <pre><code class="language-text">CRC32(message)</code></pre>
+        <div class="code-wrap">
+        <pre class="code-block"><code class="language-text">CRC32(message)</code></pre>
         </div>
         <p>After reconstruction, the decoder calculates the CRC again. If the values differ, the reconstruction is rejected.</p>
         <p>CRC32 is an <strong>error detector</strong>, not an error-correcting code. Its job is to tell us whether the output of the recovery process should be accepted.</p>
@@ -509,8 +645,8 @@ message bits</code></pre>
         <h3 id="5-matching-protection-to-the-error-pattern">5. Matching protection to the error pattern</h3>
         <h4 id="5-1-correlated-errors">5.1 Correlated errors</h4>
         <p>Suppose 25 copies of a bit are placed in nearby blocks:</p>
-        <div class="container">
-        <pre><code class="language-text">block 1  → 1
+        <div class="code-wrap">
+        <pre class="code-block"><code class="language-text">block 1  → 1
 block 2  → 1
 block 3  → 1
 ...
@@ -518,45 +654,47 @@ block 25 → 1</code></pre>
         </div>
         <p>A local image artifact can affect many of those blocks at once.</p>
         <p>Instead of 25 independent opportunities to recover the bit, the decoder may see a cluster of damaged observations:</p>
-        <div class="container">
-        <pre><code class="language-text">25 copies
-   |
-   v
-local artifact
-   |
-   v
-many copies damaged together</code></pre>
+        <div class="code-wrap">
+        <div class="flow compact" role="img" aria-label="Process flow">
+  <div class="flow-node">25 copies</div>
+  <div class="flow-arrow" aria-hidden="true"></div>
+  <div class="flow-node">Local artifact</div>
+  <div class="flow-arrow" aria-hidden="true"></div>
+  <div class="flow-node">Many copies damaged together</div>
+</div>
         </div>
         <p>These are <strong>correlated errors</strong>. Repetition works best when the errors are spread out; it performs poorly when a local disturbance destroys many copies together.</p>
         <h4 id="5-2-spatial-distribution-of-repeated-observations">5.2 Spatial distribution of repeated observations</h4>
         <p>The solution is to distribute related observations throughout the carrier instead of placing them in contiguous blocks.</p>
         <p>Conceptually:</p>
-        <div class="container">
-        <pre><code class="language-text">bit A → blocks 17, 438, 2911, 9042, 15003, ...</code></pre>
+        <div class="code-wrap">
+        <div class="relation-list"><span class="inline-relation">bit A → blocks 17, 438, 2911, 9042, 15003, ...</span></div>
         </div>
         <p>rather than:</p>
-        <div class="container">
-        <pre><code class="language-text">bit A → blocks 1, 2, 3, 4, 5, ...</code></pre>
+        <div class="code-wrap">
+        <div class="relation-list"><span class="inline-relation">bit A → blocks 1, 2, 3, 4, 5, ...</span></div>
         </div>
         <p>The final implementation uses a deterministic permutation of the available blocks with the public seed:</p>
-        <div class="container">
-        <pre><code class="language-text">0x6D2B79F5</code></pre>
+        <div class="code-wrap">
+        <pre class="code-block"><code class="language-text">0x6D2B79F5</code></pre>
         </div>
         <p>The seed is not a secret. It exists so that encoder and decoder generate the same ordering.</p>
         <p>The purpose is purely spatial: a local artifact is less likely to destroy all repeated observations of the same bit when those observations are distributed across the image.</p>
         <h4 id="5-3-interleaving">5.3 Interleaving</h4>
         <p>There is a related problem inside the error-correcting code.</p>
         <p>Suppose a local artifact destroys four nearby embedded bits. Without interleaving, those bits might belong to the same BCH codeword:</p>
-        <div class="container">
-        <pre><code class="language-text">one codeword
-    ↓
-4 corrupted bits</code></pre>
+        <div class="code-wrap">
+        <div class="flow compact" role="img" aria-label="Process flow">
+  <div class="flow-node">One codeword</div>
+  <div class="flow-arrow" aria-hidden="true"></div>
+  <div class="flow-node">4 corrupted bits</div>
+</div>
         </div>
         <p>That is difficult for a code designed to correct only a small number of errors per codeword.</p>
         <p>Interleaving changes the placement of coded bits so that nearby carrier positions correspond to different codewords.</p>
         <p>For example:</p>
-        <div class="container">
-        <pre><code class="language-text">coded stream:
+        <div class="code-wrap">
+        <pre class="code-block"><code class="language-text">coded stream:
 A B C D E F G H
 
 interleaved:
@@ -564,8 +702,8 @@ D A H C F B G E</code></pre>
         </div>
         <p>The decoder applies the inverse permutation after extraction.</p>
         <p>Now a local burst is more likely to become something like:</p>
-        <div class="container">
-        <pre><code class="language-text">codeword X → 1 error
+        <div class="code-wrap">
+        <pre class="code-block"><code class="language-text">codeword X → 1 error
 codeword Y → 1 error
 codeword Z → 1 error
 codeword W → 1 error</code></pre>
@@ -581,8 +719,8 @@ codeword W → 1 error</code></pre>
         <p>The Hamming experiment showed that the error-correcting code needed to tolerate more than one error per codeword.</p>
         <p>The next step was BCH(31,21).</p>
         <p>It takes 21 information bits and produces a 31-bit codeword:</p>
-        <div class="container">
-        <pre><code class="language-text">21 information bits
+        <div class="code-wrap">
+        <pre class="code-block"><code class="language-text">21 information bits
         |
         v
    BCH encoder
@@ -591,24 +729,21 @@ codeword W → 1 error</code></pre>
 31 coded bits</code></pre>
         </div>
         <p>The implementation uses:</p>
-        <div class="container">
-        <pre><code class="language-text">t = 2</code></pre>
+        <div class="code-wrap">
+        <pre class="code-block"><code class="language-text">t = 2</code></pre>
         </div>
         <p>so the code is configured to correct up to <strong>two bit errors per codeword</strong>.</p>
         <p>That gives more error tolerance than Hamming(15,11):</p>
-        <div class="container">
-        <pre><code class="language-text">Hamming(15,11)
-    ↓
-correct 1 error
-
-BCH(31,21)
-    ↓
-correct up to 2 errors</code></pre>
+        <div class="code-wrap">
+        <div class="compare-flow" role="img" aria-label="Hamming versus BCH error correction">
+  <div class="compare-flow-card"><strong>Hamming(15,11)</strong><span>Correct 1 error</span></div>
+  <div class="compare-flow-card"><strong>BCH(31,21)</strong><span>Correct up to 2 errors</span></div>
+</div>
         </div>
         <p>The additional redundancy costs capacity, but the payload is intentionally small and survival of the tested processing is more important than maximizing raw capacity.</p>
         <p>The complete protection stack is now:</p>
-        <div class="container">
-        <pre><code class="language-text">DCT coefficient difference
+        <div class="code-wrap">
+        <pre class="code-block"><code class="language-text">DCT coefficient difference
           ↓
       repetition
           ↓
@@ -625,8 +760,8 @@ correct up to 2 errors</code></pre>
         <p>The first BCH version substantially improved payload recovery, but the CRC still failed.</p>
         <p>The remaining weak point was the <strong>header</strong>.</p>
         <p>The header contains the information needed to interpret the payload:</p>
-        <div class="container">
-        <pre><code class="language-text">magic
+        <div class="code-wrap">
+        <pre class="code-block"><code class="language-text">magic
 message length
 CRC</code></pre>
         </div>
@@ -635,14 +770,14 @@ CRC</code></pre>
         <h4 id="6-2-bch-protection-for-the-header">6.2 BCH protection for the header</h4>
         <p>The fix was straightforward: protect the header with the same BCH-based pipeline used for the payload.</p>
         <p>The current header format is:</p>
-        <div class="container">
-        <pre><code class="language-text">4-byte magic
+        <div class="code-wrap">
+        <pre class="code-block"><code class="language-text">4-byte magic
 2-byte message length
 4-byte CRC32</code></pre>
         </div>
         <p>or:</p>
-        <div class="container">
-        <pre><code class="language-text">&gt;BCH7
+        <div class="code-wrap">
+        <pre class="code-block"><code class="language-text">&gt;BCH7
 uint16 length
 uint32 CRC</code></pre>
         </div>
@@ -650,61 +785,55 @@ uint32 CRC</code></pre>
         <p>This removed a failure mode in which the payload was recoverable but the metadata prevented the decoder from interpreting it correctly.</p>
         <h4 id="6-3-division-of-responsibility">6.3 Division of responsibility</h4>
         <p>The resulting division of responsibility is:</p>
-        <div class="container">
-        <pre><code class="language-text">repetition
-    ↓
-multiple observations
-
-interleaving
-    ↓
-reduce burst concentration
-
-BCH
-    ↓
-correct residual errors
-
-CRC32
-    ↓
-accept or reject the reconstruction</code></pre>
+        <div class="code-wrap">
+        <div class="responsibility-grid">
+  <div class="responsibility"><strong>Repetition</strong><span>Multiple observations</span></div>
+  <div class="responsibility"><strong>Interleaving</strong><span>Reduce burst concentration</span></div>
+  <div class="responsibility"><strong>BCH</strong><span>Correct residual errors</span></div>
+  <div class="responsibility"><strong>CRC32</strong><span>Accept or reject the reconstruction</span></div>
+</div>
         </div>
         <p>The CRC is deliberately last. The decoder does not pretend that a structurally valid sequence of bytes is necessarily the original message.</p>
         <hr>
         <h3 id="7-simplifying-the-carrier-modification">7. Simplifying the carrier modification</h3>
         <h4 id="7-1-multiple-pair-embedding">7.1 Multiple-pair embedding</h4>
         <p>An earlier implementation embedded the same bit into two coefficient pairs per block:</p>
-        <div class="container">
-        <pre><code class="language-text">(0,1) ↔ (1,0)
-(1,2) ↔ (2,1)</code></pre>
+        <div class="code-wrap">
+        <div class="relation-list"><span class="inline-relation">(0,1) ↔ (1,0)</span><span class="inline-relation">(1,2) ↔ (2,1)</span></div>
         </div>
         <p>That provided another local vote, but it also meant that every embedded bit modified four DCT coefficients.</p>
         <p>The experiment showed that this additional local redundancy was not necessary once the system already had repetition, interleaving, BCH, and spatial distribution.</p>
         <h4 id="7-2-final-coefficient-pair">7.2 Final coefficient pair</h4>
         <p>The final implementation uses a single pair:</p>
-        <div class="container">
-        <pre><code class="language-text">(2,3) ↔ (3,2)</code></pre>
+        <div class="code-wrap">
+        <div class="relation-list"><span class="inline-relation">(2,3) ↔ (3,2)</span></div>
         </div>
         <p>The decoder therefore makes <strong>one coefficient-pair measurement per block</strong>.</p>
         <p>This is the same pair described earlier as the best practical compromise found for the tested carrier and processing pipeline.</p>
         <h4 id="7-3-distortion-versus-redundancy">7.3 Distortion versus redundancy</h4>
         <p>The tradeoff was:</p>
-        <div class="container">
-        <pre><code class="language-text">More coefficient pairs
-        ↓
-More local redundancy
-        ↓
-More coefficient modifications
-        ↓
-More visible distortion</code></pre>
+        <div class="code-wrap">
+        <div class="flow compact" role="img" aria-label="Process flow">
+  <div class="flow-node">More coefficient pairs</div>
+  <div class="flow-arrow" aria-hidden="true"></div>
+  <div class="flow-node">More local redundancy</div>
+  <div class="flow-arrow" aria-hidden="true"></div>
+  <div class="flow-node">More coefficient modifications</div>
+  <div class="flow-arrow" aria-hidden="true"></div>
+  <div class="flow-node">More visible distortion</div>
+</div>
         </div>
         <p>versus:</p>
-        <div class="container">
-        <pre><code class="language-text">Fewer coefficient pairs
-        ↓
-Less local redundancy
-        ↓
-Less visible modification
-        ↓
-Reliance on system-level redundancy</code></pre>
+        <div class="code-wrap">
+        <div class="flow compact" role="img" aria-label="Process flow">
+  <div class="flow-node">Fewer coefficient pairs</div>
+  <div class="flow-arrow" aria-hidden="true"></div>
+  <div class="flow-node">Less local redundancy</div>
+  <div class="flow-arrow" aria-hidden="true"></div>
+  <div class="flow-node">Less visible modification</div>
+  <div class="flow-arrow" aria-hidden="true"></div>
+  <div class="flow-node">Reliance on system-level redundancy</div>
+</div>
         </div>
         <p>The final design deliberately chooses the second path.</p>
         <p>This is a useful engineering result: redundancy is not automatically beneficial simply because it improves recoverability. It also has a <strong>visual cost</strong> and a <strong>capacity cost</strong>.</p>
@@ -713,16 +842,16 @@ Reliance on system-level redundancy</code></pre>
         <h4 id="8-1-data-format">8.1 Data format</h4>
         <p>The final data format is intentionally small.</p>
         <p>The header contains:</p>
-        <div class="container">
-        <pre><code class="language-text">4-byte magic
+        <div class="code-wrap">
+        <pre class="code-block"><code class="language-text">4-byte magic
 2-byte message length
 4-byte CRC32</code></pre>
         </div>
         <p>The complete system carries UTF-8 payload bytes.</p>
         <h4 id="8-2-encoding-pipeline">8.2 Encoding pipeline</h4>
         <p>The encoder is:</p>
-        <div class="container">
-        <pre><code class="language-text">plaintext
+        <div class="code-wrap">
+        <pre class="code-block"><code class="language-text">plaintext
    |
    v
  UTF-8
@@ -788,8 +917,8 @@ interleave      interleave
         </ul>
         <h4 id="8-3-decoding-pipeline">8.3 Decoding pipeline</h4>
         <p>The decoder performs the corresponding reverse operations:</p>
-        <div class="container">
-        <pre><code class="language-text">Discord image
+        <div class="code-wrap">
+        <pre class="code-block"><code class="language-text">Discord image
      |
      v
    YCbCr
@@ -834,8 +963,8 @@ recover payload
         <p>The CRC is the final acceptance test. If it fails, the decoder does not treat the reconstructed bytes as a valid message.</p>
         <h4 id="8-4-final-configuration">8.4 Final configuration</h4>
         <p>The configuration that successfully completed the tested Discord round-trip is:</p>
-        <div class="container">
-        <pre><code class="language-text">Image:                  1024x1024
+        <div class="code-wrap">
+        <pre class="code-block"><code class="language-text">Image:                  1024x1024
 Block size:             8x8
 Transform:              DCT
 Color representation:   YCbCr
@@ -854,27 +983,29 @@ Maximum message:        36 bytes</code></pre>
         </div>
         <p>These values describe this experiment, not a universal configuration for robust image steganography.</p>
         <p>The tested path is specifically:</p>
-        <div class="container">
-        <pre><code class="language-text">1024x1024 source PNG
-        ↓
-steganographic encoder
-        ↓
-1024x1024 encoded PNG
-        ↓
-Discord profile-picture processing
-        ↓
-WebP stored by Discord
-        ↓
-downloaded WebP
-        ↓
-steganographic decoder</code></pre>
+        <div class="code-wrap">
+        <div class="flow stack" role="img" aria-label="Process flow">
+  <div class="flow-node">1024×1024 source PNG</div>
+  <div class="flow-arrow" aria-hidden="true"></div>
+  <div class="flow-node">Steganographic encoder</div>
+  <div class="flow-arrow" aria-hidden="true"></div>
+  <div class="flow-node">1024×1024 encoded PNG</div>
+  <div class="flow-arrow" aria-hidden="true"></div>
+  <div class="flow-node">Discord profile-picture processing</div>
+  <div class="flow-arrow" aria-hidden="true"></div>
+  <div class="flow-node">WebP returned by the tested retrieval path</div>
+  <div class="flow-arrow" aria-hidden="true"></div>
+  <div class="flow-node">Downloaded WebP</div>
+  <div class="flow-arrow" aria-hidden="true"></div>
+  <div class="flow-node">Steganographic decoder</div>
+</div>
         </div>
         <hr>
         <h3 id="9-results-and-tradeoffs">9. Results and tradeoffs</h3>
         <h4 id="9-1-successful-round-trip">9.1 Successful round-trip</h4>
         <p>One successful decode produced:</p>
-        <div class="container">
-        <pre><code class="language-text">Image: 1024x1024
+        <div class="code-wrap">
+        <pre class="code-block"><code class="language-text">Image: 1024x1024
 Header repetition: 25
 Payload repetition: 30
 Delta: 20.0
@@ -884,8 +1015,8 @@ Header and payload both BCH-protected
 One coefficient-pair measurement per block</code></pre>
         </div>
         <p>The decoder then reported:</p>
-        <div class="container">
-        <pre><code class="language-text">Header bytes: 424348370022ce41d29c
+        <div class="code-wrap">
+        <pre class="code-block"><code class="language-text">Header bytes: 424348370022ce41d29c
 Header BCH codewords: 4
 Header corrected codewords: 0
 Header uncorrectable codewords: 0
@@ -899,8 +1030,8 @@ Low-margin payload bits: 0/403
 Actual CRC: ce41d29c</code></pre>
         </div>
         <p>And finally:</p>
-        <div class="container">
-        <pre><code class="language-text">SUCCESS
+        <div class="code-wrap">
+        <pre class="code-block"><code class="language-text">SUCCESS
 Message: Man, you&#x27;re such a genius. Really.</code></pre>
         </div>
         <p>The important point is that this was not a decode of the unchanged source image.</p>
@@ -908,42 +1039,42 @@ Message: Man, you&#x27;re such a genius. Really.</code></pre>
         <h4 id="9-2-practical-capacity">9.2 Practical capacity</h4>
         <p>The raw carrier contains 16,384 8x8 blocks, but those blocks are heavily consumed by redundancy.</p>
         <p>The header is 10 bytes:</p>
-        <div class="container">
-        <pre><code class="language-plaintext">10\times8=80</code></pre>
+        <div class="code-wrap">
+        <pre class="code-block"><code class="language-plaintext">10 × 8=80</code></pre>
         </div>
         <p>bits.</p>
         <p>BCH(31,21) expands this to four 31-bit codewords:</p>
-        <div class="container">
-        <pre><code class="language-plaintext">4\times31=124</code></pre>
+        <div class="code-wrap">
+        <pre class="code-block"><code class="language-plaintext">4 × 31=124</code></pre>
         </div>
         <p>coded bits.</p>
         <p>At 25x repetition:</p>
-        <div class="container">
-        <pre><code class="language-plaintext">124\times25=3,100</code></pre>
+        <div class="code-wrap">
+        <pre class="code-block"><code class="language-plaintext">124 × 25=3,100</code></pre>
         </div>
         <p>blocks are used for the header.</p>
         <p>That leaves:</p>
-        <div class="container">
-        <pre><code class="language-plaintext">16,384-3,100=13,284</code></pre>
+        <div class="code-wrap">
+        <pre class="code-block"><code class="language-plaintext">16,384-3,100=13,284</code></pre>
         </div>
         <p>blocks for the payload.</p>
         <p>With 30x payload repetition, the available coded payload is approximately:</p>
-        <div class="container">
-        <pre><code class="language-plaintext">13,284/30\approx442</code></pre>
+        <div class="code-wrap">
+        <pre class="code-block"><code class="language-plaintext">13,284/30\approx442</code></pre>
         </div>
         <p>coded bits.</p>
         <p>Fourteen BCH codewords require:</p>
-        <div class="container">
-        <pre><code class="language-plaintext">14\times31=434</code></pre>
+        <div class="code-wrap">
+        <pre class="code-block"><code class="language-plaintext">14 × 31=434</code></pre>
         </div>
         <p>coded bits and carry:</p>
-        <div class="container">
-        <pre><code class="language-plaintext">14\times21=294</code></pre>
+        <div class="code-wrap">
+        <pre class="code-block"><code class="language-plaintext">14 × 21=294</code></pre>
         </div>
         <p>data bits.</p>
         <p>That is enough for:</p>
-        <div class="container">
-        <pre><code class="language-text">36 bytes = 288 bits</code></pre>
+        <div class="code-wrap">
+        <pre class="code-block"><code class="language-text">36 bytes = 288 bits</code></pre>
         </div>
         <p>with some room remaining.</p>
         <p>The practical capacity of the current robust configuration is therefore:</p>
@@ -953,8 +1084,8 @@ Message: Man, you&#x27;re such a genius. Really.</code></pre>
         <p>This is not an information-theoretic limit of the image. It is the capacity of this particular parameter set.</p>
         <h4 id="9-3-robustness-versus-capacity">9.3 Robustness versus capacity</h4>
         <p>Most of the carrier is deliberately spent on redundancy:</p>
-        <div class="container">
-        <pre><code class="language-text">BCH overhead
+        <div class="code-wrap">
+        <pre class="code-block"><code class="language-text">BCH overhead
 +
 25x header repetition
 +
@@ -966,8 +1097,8 @@ spatial distribution</code></pre>
         </div>
         <p>Reducing that redundancy would increase capacity, but it would also reduce the margin against the same processing pipeline.</p>
         <p>The earlier 75x repetition experiment illustrates the tradeoff clearly. A 216-bit coded payload would require:</p>
-        <div class="container">
-        <pre><code class="language-plaintext">216\times75=16,200</code></pre>
+        <div class="code-wrap">
+        <pre class="code-block"><code class="language-plaintext">216 × 75=16,200</code></pre>
         </div>
         <p>blocks out of 16,384 available blocks.</p>
         <p>That leaves almost no room for anything else, and errors could still remain.</p>
@@ -987,8 +1118,8 @@ spatial distribution</code></pre>
         <p>CRC32                               Error detection</p>
         <hr>
         <p>What is specific to this project is the <strong>combination and parameter set</strong> selected for the tested Discord pipeline:</p>
-        <div class="container">
-        <pre><code class="language-text">(2,3)/(3,2)
+        <div class="code-wrap">
+        <pre class="code-block"><code class="language-text">(2,3)/(3,2)
 Δ = 20
 25x header repetition
 30x payload repetition
@@ -1022,14 +1153,13 @@ BCH(31,21), t=2
         </ol>
         <p>The public shuffle exists for deterministic spatial distribution, not for secrecy. Anyone who knows the scheme and parameters can in principle decode the payload.</p>
         <ol>
-        <li>**The result is an empirical demonstration, not a universal robustness</li>
-        </ol>
-        <p>guarantee.** A successful round-trip is strong evidence for the tested channel, but broader claims would require a larger experiment across multiple images, transformations, and processing conditions.</p>
+        <li><strong>The result is an empirical demonstration, not a universal robustness guarantee.</strong></li>
+        </ol> A successful round-trip is strong evidence for the tested channel, but broader claims would require a larger experiment across multiple images, transformations, and processing conditions.</p>
         <p>These limitations are not weaknesses in the engineering argument. They define what the experiment actually demonstrates and prevent a channel-specific parameter set from being mistaken for a universal recipe.</p>
         <h4 id="9-6-reproducibility-checklist">9.6 Reproducibility checklist</h4>
         <p>The following values are sufficient to identify the major parameters of the final configuration described in this write-up:</p>
-        <div class="container">
-        <pre><code class="language-text">Carrier:                 1024x1024 PNG
+        <div class="code-wrap">
+        <pre class="code-block"><code class="language-text">Carrier:                 1024x1024 PNG
 Block size:              8x8
 Color representation:    YCbCr
 Modified channel:        Y only
@@ -1053,29 +1183,31 @@ Tested channel:          Discord profile picture → WebP → decoder</code></pr
         <h4 id="10-1-from-steganography-to-communication-system-design">10.1 From steganography to communication-system design</h4>
         <p>The original problem became a small communication system. The progression is:</p>
         <p>The major shifts in the design were:</p>
-        <div class="container">
-        <pre><code class="language-text">exact pixels
-    ↓
-transform representation
-    ↓
-relative coefficient relationship
-    ↓
-redundant observations
-    ↓
-spatial distribution
-    ↓
-interleaving
-    ↓
-error correction
-    ↓
-protected metadata
-    ↓
-integrity checking
-    ↓
-successful recovery</code></pre>
+        <div class="code-wrap">
+        <div class="flow stack" role="img" aria-label="Process flow">
+  <div class="flow-node">Exact pixels</div>
+  <div class="flow-arrow" aria-hidden="true"></div>
+  <div class="flow-node">Transform representation</div>
+  <div class="flow-arrow" aria-hidden="true"></div>
+  <div class="flow-node">Relative coefficient relationship</div>
+  <div class="flow-arrow" aria-hidden="true"></div>
+  <div class="flow-node">Redundant observations</div>
+  <div class="flow-arrow" aria-hidden="true"></div>
+  <div class="flow-node">Spatial distribution</div>
+  <div class="flow-arrow" aria-hidden="true"></div>
+  <div class="flow-node">Interleaving</div>
+  <div class="flow-arrow" aria-hidden="true"></div>
+  <div class="flow-node">Error correction</div>
+  <div class="flow-arrow" aria-hidden="true"></div>
+  <div class="flow-node">Protected metadata</div>
+  <div class="flow-arrow" aria-hidden="true"></div>
+  <div class="flow-node">Integrity checking</div>
+  <div class="flow-arrow" aria-hidden="true"></div>
+  <div class="flow-node">Successful recovery</div>
+</div>
         </div>
         <p>Each failed approach supplied a constraint for the next one:</p>
-        <table border="1" cellpadding="6" cellspacing="0">
+        <div class="table-wrap"><table class="data-table">
         <thead><tr>
         <th>Attempt</th>
         <th>What failed</th>
@@ -1123,7 +1255,7 @@ successful recovery</code></pre>
         <td>Robustness comes from the layers working together</td>
         </tr>
         </tbody>
-        </table>
+        </table></div>
         <p>The important conceptual change was that the hidden message no longer had to survive perfectly. It became a redundant signal from which the original information could be reconstructed.</p>
         <p>The system was therefore designed to <strong>survive errors</strong>, not to pretend that errors would never occur.</p>
         <h4 id="10-2-security-versus-robustness">10.2 Security versus robustness</h4>
@@ -1136,8 +1268,8 @@ successful recovery</code></pre>
         </ul>
         <p>Anyone who knows the image format, DCT scheme, coefficient location, repetition counts, BCH parameters, interleaving permutation, and public block permutation can decode the message.</p>
         <p>That was intentional. The requirement was to hide the existence of the message, not to cryptographically protect its contents.</p>
-        <div class="container">
-        <pre><code class="language-text">Steganography
+        <div class="code-wrap">
+        <pre class="code-block"><code class="language-text">Steganography
     ≠
 Encryption</code></pre>
         </div>
@@ -1152,13 +1284,14 @@ Encryption</code></pre>
     </article>
   </main>
 
-  <footer class="bp-footer" role="contentinfo" aria-label="Footer">
+  <footer class="bp-footer" role="contentinfo">
     <div class="bp-footer-inner">
-      <small>© <span id="year"></span> wqsv • <a href="https://github.com/wqsv" target="_blank" rel="noopener noreferrer">GitHub</a></small>
+      <small>© <span id="year"></span> wqsv · <a href="https://github.com/wqsv" target="_blank" rel="noopener noreferrer">GitHub</a></small>
     </div>
   </footer>
 
-  <script src="../../bg-scroll.js" defer></script>
-  <script src="../../blogpost.js" defer></script>
+  <script>
+    document.getElementById("year").textContent = new Date().getFullYear();
+  </script>
 </body>
 </html>
