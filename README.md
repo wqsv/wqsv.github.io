@@ -1,4 +1,4 @@
-# fxrstor's blog
+# wqsv's blog
 Hi. This is my blog. The code quality isn't amazing but it works (roughly two-fourths of it's pasted from stack overflow and other websites). I've used slight AI in it as well. If you notice any issues, please do not hesitate to open an issue. If you would like to save some of my time, then do the respective changes and submit a PR :)
 
 ### future ideas (for myself)

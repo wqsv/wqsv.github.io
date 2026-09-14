@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <title>Wiping the MFT from NTFS and Making Windows Unbootable - fxrstor</title>
+  <title>Wiping the MFT from NTFS and Making Windows Unbootable - wqsv</title>
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -22,10 +22,10 @@
   <header class="bp-header" role="banner" aria-label="Post header">
     <div class="bp-header-inner">
       <div class="bp-meta-left">
-        <img class="gh-avatar" src="https://avatars.githubusercontent.com/u/132809543" alt="GitHub avatar for fxrstor" width="72" height="72" />
+        <img class="gh-avatar" src="https://avatars.githubusercontent.com/u/132809543" alt="GitHub avatar for wqsv" width="72" height="72" />
         <div class="bp-title-wrap">
           <h1 class="bp-title">Wiping the MFT from NTFS and Making Windows Unbootable</h1>
-          <p class="bp-sub">by <strong>fxrstor</strong> · 10-13 minute read</p>
+          <p class="bp-sub">by <strong>wqsv</strong> · 10-13 minute read</p>
         </div>
       </div>
 
@@ -35,7 +35,7 @@
           <span class="nav-text">Home</span>
         </a>
 
-        <a class="nav-btn" href="https://github.com/fxrstor" target="_blank" rel="noopener noreferrer" title="Open GitHub profile" aria-label="Open GitHub profile">
+        <a class="nav-btn" href="https://github.com/wqsv" target="_blank" rel="noopener noreferrer" title="Open GitHub profile" aria-label="Open GitHub profile">
           <i class="fa fa-github" aria-hidden="true"></i>
           <span class="nav-text">GitHub</span>
         </a>
@@ -53,7 +53,7 @@
     <section class="article-body" itemprop="articleBody">
         <h3>Disclaimer</h3>
         <p><b>This article is not meant to be a tutorial. Do not replicate actions shown here on real hardware! Only if you both <i>know what you're doing and really understand it</i> and that you're in a Virtual Machine.</b></p>
-        <p><i>I, fxrstor, am not at fault for anything you do with this article.</i> You are 100% to blame if something occurs.</p>
+        <p><i>I, wqsv, am not at fault for anything you do with this article.</i> You are 100% to blame if something occurs.</p>
 
         <h3>Introduction</h3>
         <p>The MFT, also known as the Master File Table, is a key part of the NTFS filesystem - it is a table of <i>every file</i> on the filesystem, meaning if it is somehow corrupted or <a href="https://en.wikipedia.org/wiki/Petya_(malware_family)" target="_blank" rel="noopener noreferrer">encrypted</a>, then file recovery is potentially not possible. Luckily, there is a mirror (called the MFT Mirror), which is used if the original MFT is not accessible, stored at 2 different physical places on the disk.</p>
@@ -241,7 +241,7 @@ Volume E: (path \\.\E:) -> NTFS
         <p><img src="res/11-wipemft/mftmirr-hxd.png" alt="Hex editor showing MFT mirror" /></p>
         <p><img src="res/11-wipemft/mft-hxd.png" alt="Hex editor showing MFT" /></p>
         
-        <p>As expected both the sectors are identical as it should be. Should we trash those sectors? Yes! why not? And that is exactly what we're going to do. Unlike the previous method which we used, which wiped a single sector from MBR, in this method, we're going to utilize a kernel driver to do the task for us. I have developed a driver that allows us to arbitrarily read and write sectors a while ago. It can be found at <a href="https://github.com/fxrstor/SectorIO">https://github.com/fxrstor/SectorIO. </a></p>
+        <p>As expected both the sectors are identical as it should be. Should we trash those sectors? Yes! why not? And that is exactly what we're going to do. Unlike the previous method which we used, which wiped a single sector from MBR, in this method, we're going to utilize a kernel driver to do the task for us. I have developed a driver that allows us to arbitrarily read and write sectors a while ago. It can be found at <a href="https://github.com/wqsv/SectorIO">https://github.com/wqsv/SectorIO. </a></p>
 
         <h4>How does SectorIO work?</h4>
         <p>We aren't going to deep into its internals but the logic is fairly simple. </p>
@@ -291,7 +291,7 @@ Volume E: (path \\.\E:) -> NTFS
   free(writeBuffer);
 }</code></pre>
         </div>
-        <p>You can look at <a href="https://github.com/fxrstor/SectorIO/blob/master/example.cpp">example.cpp of SectorIO</a> to see how it can be used.</p>
+        <p>You can look at <a href="https://github.com/wqsv/SectorIO/blob/master/example.cpp">example.cpp of SectorIO</a> to see how it can be used.</p>
         <p>We can use the WipeSectors function with the location of MFT and the mirror.</p>
         <div class="container">
         <pre><code class="language-c">printf("Wiping MFT starting at sector %lld (%lld sectors)...\n", mftVolumeRelativeSector, mftSizeInSectors);
@@ -336,7 +336,7 @@ printf("Opened \\\\.\\SectorIO successfully.\n\n");</code></pre>
 
   <footer class="bp-footer" role="contentinfo" aria-label="Footer">
     <div class="bp-footer-inner">
-      <small>© <span id="year"></span> fxrstor • <a href="https://github.com/fxrstor" target="_blank" rel="noopener noreferrer">GitHub</a></small>
+      <small>© <span id="year"></span> wqsv • <a href="https://github.com/wqsv" target="_blank" rel="noopener noreferrer">GitHub</a></small>
     </div>
   </footer>
 

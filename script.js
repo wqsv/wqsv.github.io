@@ -1,5 +1,5 @@
 (() => {
-    const THEME_KEY = 'fxrstor_theme';
+    const THEME_KEY = 'wqsv_theme';
 
     const el = id => document.getElementById(id);
     const qs = s => document.querySelector(s);

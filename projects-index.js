@@ -1,40 +1,40 @@
 const PROJECTS = [
   {
     name: "ThrottleStopPoC",
-    repo: "fxrstor/ThrottleStopPoC",
+    repo: "wqsv/ThrottleStopPoC",
     description: "A PoC on CVE-2025-7771: exploiting arbitrary ring0 physical memory and I/O port read/write. Written in C.",
     language: "C",
-    href: "https://github.com/fxrstor/ThrottleStopPoC"
+    href: "https://github.com/wqsv/ThrottleStopPoC"
   },
   {
     name: "SectorIO",
-    repo: "fxrstor/SectorIO",
+    repo: "wqsv/SectorIO",
     description: "Kernel mode driver for arbitrary sector read and write on the physical disk. Written in C++.",
     language: "C++",
-    href: "https://github.com/fxrstor/SectorIO"
+    href: "https://github.com/wqsv/SectorIO"
   },
   {
     name: "jds",
-    repo: "fxrstor/jds",
+    repo: "wqsv/jds",
     description: "Julia Set renderer written in C (private currently).",
     language: "C",
-    href: "https://github.com/fxrstor/jds"
+    href: "https://github.com/wqsv/jds"
   },
   {
     name: "defer",
-    repo: "fxrstor/defer",
+    repo: "wqsv/defer",
     description: "Tiny C++ implementation of golang `defer` keyword.",
     language: "C++"
   },
   {
     name: "SigScanner",
-    repo: "fxrstor/SigScanner",
+    repo: "wqsv/SigScanner",
     description: "A simple PE function signature dumper written in C11 with no external dependencies.",
     language: "C"
   },
   {
     name: "Moonstone",
-    repo: "fxrstor/Moonstone",
+    repo: "wqsv/Moonstone",
     description: "A simple cipher based on XOR",
     language: "C"
   }
