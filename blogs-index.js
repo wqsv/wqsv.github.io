@@ -15,6 +15,14 @@ const POSTS = [
     tags: ["mft", "ntfs"],
     readTime: 10
   }
+    {
+    title: "Hiding text in Discord PFPs",
+    href: "2026/09/14-discord-steganography.html",
+    date: "2025-09-14",
+    excerpt: "A write-up detailing lossy steganography.",
+    tags: ["steganography", "lossy"],
+    readTime: 30
+  }
 ];
 
 const POSTS_PER_PAGE = 9;
