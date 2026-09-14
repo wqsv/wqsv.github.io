@@ -14,8 +14,8 @@ const POSTS = [
     excerpt: "A write-up detailing a NTFS MFT killer.",
     tags: ["mft", "ntfs"],
     readTime: 10
-  }
-    {
+  },
+  {
     title: "Hiding text in Discord PFPs",
     href: "2026/09/14-discord-steganography.html",
     date: "2025-09-14",
